@@ -1,0 +1,17 @@
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci
+COPY backend/tsconfig.json ./
+COPY backend/src/ ./src/
+COPY shared/ ./shared/
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci --omit=dev
+EXPOSE 4000
+# rootDir: ".." in tsconfig makes /app src compile to dist/app/src/ relative to /
+CMD ["node", "dist/app/src/index.js"]

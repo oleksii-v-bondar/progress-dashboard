@@ -1,0 +1,10 @@
+# Copy to terraform.tfvars and fill in your values
+# terraform.tfvars is git-ignored — never commit it
+
+tenancy_ocid      = "ocid1.tenancy.oc1..aaaaaaaa..."
+compartment_ocid  = "ocid1.compartment.oc1..aaaaaaaa..."
+region            = "eu-frankfurt-1"
+ssh_public_key    = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5... user@host"
+duckdns_token     = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+duckdns_subdomain = "myprogress"
+repo_url          = "https://github.com/yourusername/progress-app.git"

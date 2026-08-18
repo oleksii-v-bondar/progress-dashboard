@@ -1,0 +1,12 @@
+node_modules/
+dist/
+
+# Terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.tfplan
+infra/terraform/terraform.tfvars
+
+# Production env
+.env.prod
