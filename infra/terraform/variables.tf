@@ -33,3 +33,9 @@ variable "repo_url" {
   description = "Git repository URL to clone on the VM (https or ssh)"
   type        = string
 }
+
+variable "ad_index" {
+  description = "Availability domain index (0, 1, or 2)"
+  type        = number
+  default     = 0
+}
