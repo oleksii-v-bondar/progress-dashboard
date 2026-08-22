@@ -113,14 +113,14 @@ resource "oci_core_subnet" "app" {
 # ── Compute ───────────────────────────────────────────────────────────────────
 
 resource "oci_core_instance" "app" {
-  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[var.ad_index].name
   compartment_id      = var.compartment_ocid
   display_name        = "progress-app"
   shape               = "VM.Standard.A1.Flex"
 
   shape_config {
-    ocpus         = 2
-    memory_in_gbs = 12
+    ocpus         = 1
+    memory_in_gbs = 6
   }
 
   source_details {
