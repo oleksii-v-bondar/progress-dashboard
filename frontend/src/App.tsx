@@ -13,13 +13,8 @@ import { TodosView } from './pages/TodosView';
 import { LoginPage } from './pages/LoginPage';
 import { isAuthenticated } from './api/client';
 
-function App() {
-  const [loggedIn, setLoggedIn] = useState(isAuthenticated());
+function Dashboard() {
   const [currentView, setCurrentView] = useState('today');
-
-  if (!loggedIn) {
-    return <LoginPage onLogin={() => setLoggedIn(true)} />;
-  }
   const { areas, createArea, createSkill, deleteSkill } = useAreas();
   const progress = useProgress();
 
@@ -80,6 +75,16 @@ function App() {
       {renderView()}
     </Layout>
   );
+}
+
+function App() {
+  const [loggedIn, setLoggedIn] = useState(isAuthenticated());
+
+  if (!loggedIn) {
+    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+  }
+
+  return <Dashboard />;
 }
 
 export default App;
