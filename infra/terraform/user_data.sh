@@ -14,13 +14,16 @@ APP_DIR="/opt/progress-app"
 # ── 1. System update & packages ───────────────────────────────────────────────
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y \
-  docker.io \
-  docker-compose-plugin \
-  git \
-  curl \
-  python3-pip \
-  certbot
+apt-get install -y ca-certificates curl gnupg git python3-pip certbot
+
+# Add Docker's official repo
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Install certbot-dns-duckdns plugin
 pip3 install --break-system-packages certbot-dns-duckdns
