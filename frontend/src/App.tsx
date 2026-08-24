@@ -10,9 +10,16 @@ import { NotesView } from './pages/NotesView';
 import { HistoryView } from './pages/HistoryView';
 import { ArchivedView } from './pages/ArchivedView';
 import { TodosView } from './pages/TodosView';
+import { LoginPage } from './pages/LoginPage';
+import { isAuthenticated } from './api/client';
 
 function App() {
+  const [loggedIn, setLoggedIn] = useState(isAuthenticated());
   const [currentView, setCurrentView] = useState('today');
+
+  if (!loggedIn) {
+    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+  }
   const { areas, createArea, createSkill, deleteSkill } = useAreas();
   const progress = useProgress();
 

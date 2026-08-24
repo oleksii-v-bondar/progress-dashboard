@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import authRouter from './routes/auth';
+import { authMiddleware } from './middleware/auth';
 import areasRouter from './routes/areas';
 import skillsRouter from './routes/skills';
 import tasksRouter from './routes/tasks';
@@ -14,17 +16,20 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
+// Public routes
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+app.use('/api/auth', authRouter);
 
-app.use('/api/areas', areasRouter);
-app.use('/api', skillsRouter);
-app.use('/api/tasks', tasksRouter);
-app.use('/api/tasks', completionsRouter);
-app.use('/api/progress', progressRouter);
-app.use('/api/notes', notesRouter);
-app.use('/api/todos', todosRouter);
+// Protected routes
+app.use('/api/areas', authMiddleware, areasRouter);
+app.use('/api', authMiddleware, skillsRouter);
+app.use('/api/tasks', authMiddleware, tasksRouter);
+app.use('/api/tasks', authMiddleware, completionsRouter);
+app.use('/api/progress', authMiddleware, progressRouter);
+app.use('/api/notes', authMiddleware, notesRouter);
+app.use('/api/todos', authMiddleware, todosRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);

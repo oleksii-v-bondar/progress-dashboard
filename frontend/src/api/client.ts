@@ -3,12 +3,37 @@ import type { Area, Skill, Task, TaskWithDetails, ProgressStats, AreaProgress, N
 const API_BASE = '/api';
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const token = localStorage.getItem('token');
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     ...options,
   });
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    window.location.reload();
+    throw new Error('Unauthorized');
+  }
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
+}
+
+export async function login(password: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  });
+  if (!res.ok) return false;
+  const { token } = await res.json();
+  localStorage.setItem('token', token);
+  return true;
+}
+
+export function isAuthenticated(): boolean {
+  return !!localStorage.getItem('token');
 }
 
 export const api = {

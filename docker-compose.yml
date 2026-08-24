@@ -31,6 +31,8 @@ services:
       DB_PASSWORD: progress
       DB_NAME: progress
       PORT: 4000
+      APP_PASSWORD: admin
+      JWT_SECRET: dev-secret
     volumes:
       - ./backend/src:/app/src
       - ./shared:/app/shared
