@@ -2,7 +2,7 @@ terraform {
   required_providers {
     oci = {
       source  = "oracle/oci"
-      version = "~> 6.0"
+      version = "~> 6.37"
     }
   }
 }
@@ -149,7 +149,7 @@ resource "oci_core_instance" "app" {
 # ── Block Volume ──────────────────────────────────────────────────────────────
 
 resource "oci_core_volume" "data" {
-  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
+  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[var.ad_index].name
   compartment_id      = var.compartment_ocid
   display_name        = "progress-app-data"
   size_in_gbs         = 50

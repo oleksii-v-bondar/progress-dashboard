@@ -37,5 +37,5 @@ variable "repo_url" {
 variable "ad_index" {
   description = "Availability domain index (0, 1, or 2)"
   type        = number
-  default     = 0
+  default     = 2
 }
