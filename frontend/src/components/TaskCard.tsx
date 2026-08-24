@@ -178,7 +178,8 @@ export function TaskCard({
         {onEdit && !editing && (
           <button
             onClick={() => setEditing(true)}
-            style={{ fontSize: 12, color: 'var(--text-muted)', opacity: 0.5, padding: 4 }}
+            className="task-action-btn"
+            style={{ fontSize: 14, color: 'var(--text-muted)', opacity: 0.5, padding: 8 }}
           >
             &#9998;
           </button>
@@ -187,9 +188,10 @@ export function TaskCard({
           <button
             key={action.status}
             onClick={() => onMove(id, action.status)}
+            className="task-action-btn"
             style={{
-              fontSize: 11,
-              padding: '4px 8px',
+              fontSize: 12,
+              padding: '6px 10px',
               borderRadius: 4,
               background: 'var(--bg-tertiary)',
               color: 'var(--text-secondary)',
@@ -200,11 +202,12 @@ export function TaskCard({
         ))}
         <button
           onClick={() => onDelete(id)}
+          className="task-action-btn"
           style={{
-            fontSize: 16,
+            fontSize: 18,
             color: 'var(--text-muted)',
             opacity: 0.5,
-            padding: 4,
+            padding: 8,
           }}
         >
           &times;

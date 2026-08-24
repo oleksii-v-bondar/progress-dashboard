@@ -59,15 +59,7 @@ interface ProgressOverviewProps {
 
 export function ProgressOverview({ today, week }: ProgressOverviewProps) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: 32,
-        padding: '16px 24px',
-        background: 'var(--bg-secondary)',
-        borderBottom: '1px solid var(--border)',
-      }}
-    >
+    <div className="progress-overview">
       <SegmentedBar
         label="Today"
         completed={today.completed}

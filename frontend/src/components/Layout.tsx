@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { ProgressOverview } from './ProgressOverview';
 
@@ -16,18 +16,50 @@ interface LayoutProps {
 }
 
 export function Layout({ children, areas, currentView, onViewChange, onAreaSelect, onCreateArea, progress }: LayoutProps) {
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleNav = (view: string) => {
+    onViewChange(view);
+    setMenuOpen(false);
+  };
+
+  const handleAreaNav = (areaId: string) => {
+    onAreaSelect(areaId);
+    setMenuOpen(false);
+  };
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar
-        areas={areas}
-        currentView={currentView}
-        onViewChange={onViewChange}
-        onAreaSelect={onAreaSelect}
-        onCreateArea={onCreateArea}
-      />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+    <div className="layout">
+      {/* Mobile header */}
+      <header className="mobile-header">
+        <button className="menu-toggle" onClick={() => setMenuOpen(true)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+        <span className="mobile-title">Progress</span>
+      </header>
+
+      {/* Overlay */}
+      {menuOpen && <div className="sidebar-overlay" onClick={() => setMenuOpen(false)} />}
+
+      {/* Sidebar */}
+      <aside className={`sidebar ${menuOpen ? 'sidebar--open' : ''}`}>
+        <Sidebar
+          areas={areas}
+          currentView={currentView}
+          onViewChange={handleNav}
+          onAreaSelect={handleAreaNav}
+          onCreateArea={onCreateArea}
+        />
+      </aside>
+
+      {/* Main content */}
+      <div className="main-content">
         <ProgressOverview today={progress.today} week={progress.week} />
-        <main style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+        <main className="main-body">
           {children}
         </main>
       </div>

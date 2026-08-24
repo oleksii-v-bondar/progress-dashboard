@@ -35,19 +35,7 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
   ];
 
   return (
-    <aside
-      style={{
-        width: 240,
-        background: 'var(--bg-secondary)',
-        borderRight: '1px solid var(--border)',
-        padding: '20px 0',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
-      }}
-    >
+    <div className="sidebar-inner">
       <div style={{ padding: '0 16px', marginBottom: 24 }}>
         <h1 style={{ fontSize: 18, fontWeight: 700 }}>Progress</h1>
       </div>
@@ -57,6 +45,7 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
           <button
             key={item.id}
             onClick={() => onViewChange(item.id)}
+            className="nav-item"
             style={{
               display: 'block',
               width: '100%',
@@ -103,8 +92,8 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
                   type="button"
                   onClick={() => setNewColor(c)}
                   style={{
-                    width: 20,
-                    height: 20,
+                    width: 24,
+                    height: 24,
                     borderRadius: '50%',
                     background: c,
                     border: newColor === c ? '2px solid white' : '2px solid transparent',
@@ -116,7 +105,7 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
               type="submit"
               style={{
                 width: '100%',
-                padding: '6px',
+                padding: '8px',
                 borderRadius: 6,
                 background: 'var(--accent)',
                 fontSize: 13,
@@ -132,6 +121,7 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
           <button
             key={area.id}
             onClick={() => onAreaSelect(area.id)}
+            className="nav-item"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -145,11 +135,11 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
               background: currentView === `area-${area.id}` ? 'var(--bg-tertiary)' : 'transparent',
             }}
           >
-            <span style={{ width: 10, height: 10, borderRadius: '50%', background: area.color }} />
+            <span style={{ width: 10, height: 10, borderRadius: '50%', background: area.color, flexShrink: 0 }} />
             {area.name}
           </button>
         ))}
       </div>
-    </aside>
+    </div>
   );
 }

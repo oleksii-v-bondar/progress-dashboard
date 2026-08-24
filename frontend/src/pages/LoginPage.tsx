@@ -35,7 +35,9 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
         background: 'var(--bg-secondary)',
         borderRadius: '8px',
         border: '1px solid var(--border)',
-        width: '300px',
+        width: '100%',
+        maxWidth: '300px',
+        margin: '0 16px',
       }}>
         <h2 style={{ margin: 0, color: 'var(--text-primary)', textAlign: 'center' }}>
           Login
