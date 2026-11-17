@@ -15,6 +15,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -euo pipefail
             cd /opt/progress-app
             git pull origin master
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build

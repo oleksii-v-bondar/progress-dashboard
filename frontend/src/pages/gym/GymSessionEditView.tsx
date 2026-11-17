@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GymEffort } from '@shared/types';
 import { api } from '../../api/client';
-import { useAsync } from '../../hooks/useAsync';
+import { useAsync, errorMessage } from '../../hooks/useAsync';
 import { gymViews, Navigate } from './nav';
 import { groupByExercise } from './setFormat';
 
@@ -60,9 +60,9 @@ export function GymSessionEditView({ sessionId, onNavigate }: { sessionId: strin
         });
       }
       onNavigate(gymViews.historyDetail(session.id));
-    } catch {
+    } catch (e) {
       await reload();
-      setError('Some changes may not have been saved. Please review and try again.');
+      setError(`Some changes may not have been saved. Please review and try again. ${errorMessage(e)}`);
     } finally {
       setSaving(false);
     }
