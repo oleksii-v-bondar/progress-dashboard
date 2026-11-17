@@ -9,6 +9,7 @@ import completionsRouter from './routes/completions';
 import progressRouter from './routes/progress';
 import notesRouter from './routes/notes';
 import todosRouter from './routes/todos';
+import gymRouter from './routes/gym';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -30,6 +31,7 @@ app.use('/api/tasks', authMiddleware, completionsRouter);
 app.use('/api/progress', authMiddleware, progressRouter);
 app.use('/api/notes', authMiddleware, notesRouter);
 app.use('/api/todos', authMiddleware, todosRouter);
+app.use('/api/gym', authMiddleware, gymRouter);
 
 app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
