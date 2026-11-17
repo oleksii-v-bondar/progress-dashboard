@@ -29,7 +29,10 @@ export const isNonEmptyStr = (v: unknown): v is string => typeof v === 'string' 
 export const isInt = (v: unknown, min: number): v is number => Number.isInteger(v) && (v as number) >= min;
 export const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
-export function validateExerciseFields(body: unknown, partial: boolean): { errors: string[]; fields: Obj } {
+const isNumericStr = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0 && Number.isFinite(Number(v));
+
+// lenientWeight: the old app's export serialises NUMERIC starting_weight as a string
+export function validateExerciseFields(body: unknown, partial: boolean, lenientWeight = false): { errors: string[]; fields: Obj } {
   const b = isObj(body) ? body : {};
   const errors: string[] = [];
   const fields: Obj = {};
@@ -52,7 +55,12 @@ export function validateExerciseFields(body: unknown, partial: boolean): { error
   check('target_reps', !partial, (v) => isInt(v, 1), 'must be a positive integer');
   check('order_index', false, (v) => isInt(v, 0), 'must be a non-negative integer');
   check('rest_seconds', false, (v) => v === null || isInt(v, 0), 'must be a non-negative integer or null');
-  check('starting_weight', false, (v) => v === null || isNum(v), 'must be a number or null');
+  check(
+    'starting_weight', false,
+    (v) => v === null || isNum(v) || (lenientWeight && isNumericStr(v)),
+    'must be a number or null',
+    (v) => (typeof v === 'string' ? Number(v) : v),
+  );
   check(
     'extra_segments', false,
     (v) => Array.isArray(v) && v.every((s) => isObj(s) && isInt(s.reps, 1)),
@@ -81,7 +89,7 @@ export function validatePlanImport(body: unknown): { ok: true; plan: PlanImport 
       } else {
         d.exercises.forEach((e: unknown, j: number) => {
           if (!isObj(e)) { details.push(`${p}.exercises[${j}] must be an object`); return; }
-          const { errors, fields } = validateExerciseFields(e, false);
+          const { errors, fields } = validateExerciseFields(e, false, true);
           errors.forEach((m) => details.push(`${p}.exercises[${j}].${m}`));
           exercises.push(fields as unknown as ExerciseImport);
         });

@@ -14,6 +14,20 @@ describe('validatePlanImport', () => {
     expect(r.plan.days[1].is_superset).toBe(false);
   });
 
+  it('accepts a real old-app export where starting_weight is a numeric string or null', () => {
+    const r = validatePlanImport({ name: 'Old', days: [{ name: 'A', is_superset: false, exercises: [
+      { exercise_name: 'Bench', target_sets: 3, target_reps: 8, rest_seconds: 90, starting_weight: '40', extra_segments: [] },
+      { exercise_name: 'Row', target_sets: 3, target_reps: 8, rest_seconds: null, starting_weight: null, extra_segments: [] },
+    ] }] });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.plan.days[0].exercises[0].starting_weight).toBe(40);
+    expect(r.plan.days[0].exercises[1].starting_weight).toBeNull();
+    expect(validatePlanImport({ name: 'Old', days: [{ name: 'A', exercises: [
+      { exercise_name: 'Bench', target_sets: 3, target_reps: 8, starting_weight: 'abc' },
+    ] }] }).ok).toBe(false);
+  });
+
   it('reports nested errors with paths', () => {
     const r = validatePlanImport({ name: 'X', days: [{ name: '', exercises: [
       { exercise_name: 'Squat', target_sets: 0, target_reps: 5 },
@@ -30,6 +44,10 @@ describe('validatePlanImport', () => {
 });
 
 describe('validateExerciseFields', () => {
+  it('still rejects a string starting_weight in the regular API', () => {
+    expect(validateExerciseFields({ starting_weight: '40' }, true).errors).toEqual(['starting_weight must be a number or null']);
+  });
+
   it('requires name, sets and reps when not partial', () => {
     expect(validateExerciseFields({}, false).errors).toEqual([
       'exercise_name must be a non-empty string',
