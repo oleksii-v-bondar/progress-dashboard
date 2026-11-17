@@ -3,6 +3,9 @@ import { GymPlansView } from './GymPlansView';
 import { GymPlanView } from './GymPlanView';
 import { GymPlanEditorView } from './GymPlanEditorView';
 import { GymSessionView } from './GymSessionView';
+import { GymHistoryView } from './GymHistoryView';
+import { GymSessionDetailView } from './GymSessionDetailView';
+import { GymSessionEditView } from './GymSessionEditView';
 import { Navigate, parseGymView } from './nav';
 
 export function GymRouter({ view, onNavigate }: { view: string; onNavigate: Navigate }) {
@@ -19,6 +22,12 @@ export function GymRouter({ view, onNavigate }: { view: string; onNavigate: Navi
       return <GymPlanEditorView planId={v.id} onNavigate={onNavigate} />;
     case 'session':
       return <GymSessionView dayId={v.dayId} onNavigate={onNavigate} />;
+    case 'history':
+      return <GymHistoryView onNavigate={onNavigate} />;
+    case 'historyDetail':
+      return <GymSessionDetailView sessionId={v.id} onNavigate={onNavigate} />;
+    case 'historyEdit':
+      return <GymSessionEditView sessionId={v.id} onNavigate={onNavigate} />;
     default:
       return <div className="gym-muted">Page not found</div>;
   }
