@@ -18,3 +18,7 @@ jobs:
             cd /opt/progress-app
             git pull origin master
             docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+            for f in database/migrations/*.sql; do
+              docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T db \
+                psql -v ON_ERROR_STOP=1 -U progress -d progress < "$f"
+            done
