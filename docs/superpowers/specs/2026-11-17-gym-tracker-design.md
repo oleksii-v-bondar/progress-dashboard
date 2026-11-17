@@ -68,13 +68,16 @@ CREATE INDEX idx_gym_set_logs_ex_time ON gym_set_logs(day_exercise_id, created_a
 CREATE INDEX idx_gym_sessions_day_time ON gym_sessions(plan_day_id, started_at);
 ```
 
-Migration file uses `IF NOT EXISTS` / a `DO $$` guard for the enum so it is re-runnable.
+The deploy workflow applies every `database/migrations/*.sql` after `docker compose up`, so all
+migration files must be idempotent. Migration file uses `IF NOT EXISTS` / a `DO $$` guard for the enum so it is re-runnable.
 NUMERIC columns are returned as strings by `pg`; routes convert them to numbers.
 
 ## API (`backend/src/routes/gym.ts`, mounted at `/api/gym` behind `authMiddleware`)
 
 Validation is hand-written (as in existing routes); invalid input → `400 {error}`; missing or
-soft-deleted entities → `404 {error:'not found'}`.
+soft-deleted entities (or non-UUID ids) → `404 {error:'not found'}`. DELETE endpoints return
+`200 {success:true}` (dashboard convention — the frontend `request()` always parses JSON).
+Async handlers are wrapped so DB errors become `500` instead of hanging (Express 4).
 
 | Method | Path | Body / result |
 |---|---|---|
@@ -82,33 +85,34 @@ soft-deleted entities → `404 {error:'not found'}`.
 | POST | `/plans` | `{name}` → `201 {id}` |
 | GET | `/plans/:id` | `{id,name,is_active,days:[{id,name,order_index,is_superset,exercises:[{id,exercise_name,order_index,target_sets,target_reps,rest_seconds,starting_weight,extra_segments}]}]}` |
 | PUT | `/plans/:id` | optional `{name,is_active}` → `{id}`; setting `is_active=true` clears it on other plans |
-| DELETE | `/plans/:id` | soft delete → 204 |
+| DELETE | `/plans/:id` | soft delete |
 | POST | `/plans/:id/duplicate` | deep copy as `"<name> (copy)"`, inactive → `201 {id}` |
 | POST | `/plans/import` | import JSON (format below) → `201 {id}` / `400 {error:'invalid plan',details}` |
 | GET | `/plans/:id/export` | plan in import format (no ids/order fields) |
 | POST | `/plans/:id/days` | `{name}` → `201 {id}`, appended order |
 | GET | `/days/:id` | `{id,name,is_superset,plan_id,exercises:[...]}` |
 | PUT | `/days/:id` | optional `{name,order_index,is_superset}` → `{id}` |
-| DELETE | `/days/:id` | 204 |
+| DELETE | `/days/:id` | hard delete (cascades) |
 | POST | `/days/:id/exercises` | `{exercise_name,target_sets>0,target_reps>0,rest_seconds?,starting_weight?,extra_segments?}` → `201 {id}` |
 | PUT | `/exercises/:id` | partial exercise fields → `{id}` |
-| DELETE | `/exercises/:id` | 204 |
+| DELETE | `/exercises/:id` | hard delete (cascades) |
 | POST | `/sessions` | `{plan_day_id}`; reuse latest unfinished session for that day (200) else create (201) → `{id,started_at}` |
 | GET | `/sessions` | finished, newest first: `{id,finished_at,plan_day_id,day_name,set_count}[]` |
 | GET | `/sessions/active` | unfinished: `{id,plan_day_id,started_at,day_name,set_count}[]` |
 | GET | `/sessions/:id` | `{id,plan_day_id,started_at,finished_at,day_name,sets:[{id,day_exercise_id,exercise_name,set_number,weight_used,reps_done,effort,extra_segments,created_at}]}` |
-| DELETE | `/sessions/:id` | discard/delete (cascades logs) → 204 |
+| DELETE | `/sessions/:id` | discard/delete (cascades logs) |
 | POST | `/sessions/:id/sets` | `{day_exercise_id,set_number>0,weight_used:number,reps_done>=0,effort,extra_segments?:[{weight,reps>=0}]}` → `201 {id}` |
 | PATCH | `/sessions/:id/sets/:setId` | `{weight_used,reps_done,effort,extra_segments}` → `{id}` |
 | POST | `/sessions/:id/finish` | sets `finished_at=now()` → `{id,finished_at}` |
 | GET | `/exercises/:id/suggestion` | `{weight:number|null,reason}` |
-| GET | `/exercises/:id/trend` | `{series:[{date,topWeight,bestE1rm}],label,slope}` |
+| GET | `/exercises/:id/trend` | `{exercise_name,series:[{date,topWeight,bestE1rm}],label,slope}` |
 
 **Import format:** `{name:string≥1, days:[{name:string≥1, is_superset?:bool, exercises:[{exercise_name:string≥1, target_sets:int>0, target_reps:int>0, rest_seconds?:int≥0|null, starting_weight?:number|null, extra_segments?:[{reps:int>0}]}]}]}`; empty arrays allowed. Compatible with files exported from gym-and-food.
 
 ## Algorithms (`backend/src/gym/logic.ts`, pure, unit-tested)
 
-- **suggest(exercise, lastFinishedSessionSets):** no history → `starting_weight` with reason, or
+- **suggest(exercise, lastFinishedSessionSets):** input sets = this exercise's sets from the
+  most recently finished session that logged it (ordered by `finished_at DESC, id DESC`). No history → `starting_weight` with reason, or
   `null` asking for a weight. Otherwise `last = max(weight_used)`; if any set `failed` or
   `reps_done < target_reps` → `last − 2.5`; else if all sets `easy` → `last + 2.5`; else hold
   `last`. No zero floor (assisted negatives allowed).
@@ -137,7 +141,8 @@ soft-deleted entities → `404 {error:'not found'}`.
   - **GymPlanEditorView** — rename plan; add/rename/delete days; toggle superset; add/edit/
     delete exercises (name, sets, reps, rest, starting weight, extra segment reps list).
   - **GymSessionView** — start-or-resume; schedule: superset days round-major (one set of each
-    exercise per round, rounds = max target sets, skipping exercises out of sets), otherwise
+    exercise per round, rounds = max target sets, every exercise appears in every round — same as
+    the original app), otherwise
     exercise-major; resume step from logged-set count; carry last logged weight forward for
     the current exercise; Finish early / Finish & save; "Set logged" flash ~1.2 s.
   - **ExerciseLogger** — set-completion dots (clamped), reps default target, weight default
