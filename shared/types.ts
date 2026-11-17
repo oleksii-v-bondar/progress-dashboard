@@ -76,3 +76,108 @@ export interface AllTimeStats {
   current_streak: number;
   longest_streak: number;
 }
+
+// ── Gym ─────────────────────────────────────────────────────────────────────
+export type GymEffort = 'easy' | 'ok' | 'hard' | 'failed';
+
+export interface GymPlan {
+  id: string;
+  name: string;
+  is_active: boolean;
+}
+
+export interface GymSegmentTarget { reps: number; }
+export interface GymSegment { weight: number; reps: number; }
+
+export interface GymExercise {
+  id: string;
+  exercise_name: string;
+  order_index: number;
+  target_sets: number;
+  target_reps: number;
+  rest_seconds: number | null;
+  starting_weight: number | null;
+  extra_segments: GymSegmentTarget[];
+}
+
+export type GymExerciseInput = Partial<Omit<GymExercise, 'id'>>;
+
+export interface GymDay {
+  id: string;
+  name: string;
+  order_index: number;
+  is_superset: boolean;
+  exercises: GymExercise[];
+}
+
+export interface GymPlanTree extends GymPlan { days: GymDay[]; }
+
+export interface GymDayDetail {
+  id: string;
+  name: string;
+  is_superset: boolean;
+  plan_id: string;
+  exercises: GymExercise[];
+}
+
+export interface GymPlanImport {
+  name: string;
+  days: Array<{
+    name: string;
+    is_superset: boolean;
+    exercises: Array<Omit<GymExercise, 'id' | 'order_index'>>;
+  }>;
+}
+
+export interface GymSessionRow {
+  id: string;
+  plan_day_id: string;
+  started_at: string;
+  finished_at: string | null;
+  day_name: string;
+  set_count: number;
+}
+
+export interface GymSetLog {
+  id: string;
+  day_exercise_id: string;
+  exercise_name: string;
+  set_number: number;
+  weight_used: number;
+  reps_done: number;
+  effort: GymEffort;
+  extra_segments: GymSegment[];
+  created_at: string;
+}
+
+export interface GymSessionDetail {
+  id: string;
+  plan_day_id: string;
+  started_at: string;
+  finished_at: string | null;
+  day_name: string;
+  sets: GymSetLog[];
+}
+
+export interface GymSetInput {
+  weight_used: number;
+  reps_done: number;
+  effort: GymEffort;
+  extra_segments: GymSegment[];
+}
+
+export interface GymNewSet extends GymSetInput {
+  day_exercise_id: string;
+  set_number: number;
+}
+
+export interface GymSuggestion { weight: number | null; reason: string; }
+
+export type GymTrendLabel = 'progressing' | 'steady' | 'regressing' | 'insufficient';
+export interface GymTrendPoint { date: string; topWeight: number; bestE1rm: number; }
+export interface GymTrend {
+  exercise_name: string;
+  series: GymTrendPoint[];
+  label: GymTrendLabel;
+  slope: number;
+}

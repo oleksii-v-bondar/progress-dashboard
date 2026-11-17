@@ -12,6 +12,8 @@ import { ArchivedView } from './pages/ArchivedView';
 import { TodosView } from './pages/TodosView';
 import { LoginPage } from './pages/LoginPage';
 import { isAuthenticated } from './api/client';
+import { GymRouter } from './pages/gym/GymRouter';
+import { isGymView } from './pages/gym/nav';
 
 function Dashboard() {
   const [currentView, setCurrentView] = useState('today');
@@ -43,6 +45,9 @@ function Dashboard() {
       case 'history':
         return <HistoryView />;
       default: {
+        if (isGymView(currentView)) {
+          return <GymRouter key={currentView} view={currentView} onNavigate={setCurrentView} />;
+        }
         if (currentView.startsWith('area-')) {
           const areaId = currentView.replace('area-', '');
           const area = areas.find(a => a.id === areaId);

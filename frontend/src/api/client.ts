@@ -1,4 +1,4 @@
-import type { Area, Skill, Task, TaskWithDetails, ProgressStats, AreaProgress, Note, Todo, AllTimeStats } from '@shared/types';
+import type { Area, Skill, Task, TaskWithDetails, ProgressStats, AreaProgress, Note, Todo, AllTimeStats, GymPlan, GymPlanTree, GymPlanImport, GymDayDetail, GymExerciseInput, GymSessionRow, GymSessionDetail, GymNewSet, GymSetInput, GymSuggestion, GymTrend } from '@shared/types';
 
 const API_BASE = '/api';
 
@@ -16,7 +16,10 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     window.location.reload();
     throw new Error('Unauthorized');
   }
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string; details?: string[] } | null;
+    throw new Error(body?.error ? [body.error, ...(body.details ?? [])].join('\n') : `API error: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -110,4 +113,42 @@ export const api = {
     request<Note>(`/notes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteNote: (id: string) =>
     request<void>(`/notes/${id}`, { method: 'DELETE' }),
+
+  // Gym
+  gymPlans: () => request<GymPlan[]>('/gym/plans'),
+  gymCreatePlan: (name: string) =>
+    request<{ id: string }>('/gym/plans', { method: 'POST', body: JSON.stringify({ name }) }),
+  gymImportPlan: (plan: unknown) =>
+    request<{ id: string }>('/gym/plans/import', { method: 'POST', body: JSON.stringify(plan) }),
+  gymPlan: (id: string) => request<GymPlanTree>(`/gym/plans/${id}`),
+  gymUpdatePlan: (id: string, data: { name?: string; is_active?: boolean }) =>
+    request<{ id: string }>(`/gym/plans/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  gymDeletePlan: (id: string) => request<void>(`/gym/plans/${id}`, { method: 'DELETE' }),
+  gymDuplicatePlan: (id: string) => request<{ id: string }>(`/gym/plans/${id}/duplicate`, { method: 'POST' }),
+  gymExportPlan: (id: string) => request<GymPlanImport>(`/gym/plans/${id}/export`),
+  gymAddDay: (planId: string, name: string) =>
+    request<{ id: string }>(`/gym/plans/${planId}/days`, { method: 'POST', body: JSON.stringify({ name }) }),
+  gymDay: (dayId: string) => request<GymDayDetail>(`/gym/days/${dayId}`),
+  gymUpdateDay: (dayId: string, data: { name?: string; is_superset?: boolean; order_index?: number }) =>
+    request<{ id: string }>(`/gym/days/${dayId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  gymDeleteDay: (dayId: string) => request<void>(`/gym/days/${dayId}`, { method: 'DELETE' }),
+  gymAddExercise: (dayId: string, data: GymExerciseInput) =>
+    request<{ id: string }>(`/gym/days/${dayId}/exercises`, { method: 'POST', body: JSON.stringify(data) }),
+  gymUpdateExercise: (exId: string, data: GymExerciseInput) =>
+    request<{ id: string }>(`/gym/exercises/${exId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  gymDeleteExercise: (exId: string) => request<void>(`/gym/exercises/${exId}`, { method: 'DELETE' }),
+  gymStartSession: (dayId: string) =>
+    request<{ id: string; started_at: string }>('/gym/sessions', { method: 'POST', body: JSON.stringify({ plan_day_id: dayId }) }),
+  gymSessions: () => request<GymSessionRow[]>('/gym/sessions'),
+  gymActiveSessions: () => request<GymSessionRow[]>('/gym/sessions/active'),
+  gymSession: (id: string) => request<GymSessionDetail>(`/gym/sessions/${id}`),
+  gymDeleteSession: (id: string) => request<void>(`/gym/sessions/${id}`, { method: 'DELETE' }),
+  gymLogSet: (sessionId: string, set: GymNewSet) =>
+    request<{ id: string }>(`/gym/sessions/${sessionId}/sets`, { method: 'POST', body: JSON.stringify(set) }),
+  gymUpdateSet: (sessionId: string, setId: string, set: GymSetInput) =>
+    request<{ id: string }>(`/gym/sessions/${sessionId}/sets/${setId}`, { method: 'PATCH', body: JSON.stringify(set) }),
+  gymFinishSession: (id: string) =>
+    request<{ id: string; finished_at: string }>(`/gym/sessions/${id}/finish`, { method: 'POST' }),
+  gymSuggestion: (exId: string) => request<GymSuggestion>(`/gym/exercises/${exId}/suggestion`),
+  gymTrend: (exId: string) => request<GymTrend>(`/gym/exercises/${exId}/trend`),
 };

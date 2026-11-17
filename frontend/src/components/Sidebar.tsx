@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { gymNavSection, gymViews } from '../pages/gym/nav';
 
 interface SidebarProps {
   areas: Array<{ id: string; name: string; color: string }>;
@@ -24,6 +25,25 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
     }
   };
 
+  const navButtonStyle = (active: boolean): React.CSSProperties => ({
+    display: 'block',
+    width: '100%',
+    textAlign: 'left',
+    padding: '10px 12px',
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: active ? 600 : 400,
+    background: active ? 'var(--bg-tertiary)' : 'transparent',
+    color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+  });
+
+  const gymItems = [
+    { id: gymViews.plans, label: 'Plans' },
+    { id: gymViews.newPlan, label: 'New plan' },
+    { id: gymViews.history, label: 'History' },
+  ];
+  const gymActive = gymNavSection(currentView);
+
   const navItems = [
     { id: 'today', label: 'Today' },
     { id: 'week', label: 'This Week' },
@@ -46,17 +66,25 @@ export function Sidebar({ areas, currentView, onViewChange, onAreaSelect, onCrea
             key={item.id}
             onClick={() => onViewChange(item.id)}
             className="nav-item"
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              padding: '10px 12px',
-              borderRadius: 6,
-              fontSize: 14,
-              fontWeight: currentView === item.id ? 600 : 400,
-              background: currentView === item.id ? 'var(--bg-tertiary)' : 'transparent',
-              color: currentView === item.id ? 'var(--text-primary)' : 'var(--text-secondary)',
-            }}
+            style={navButtonStyle(currentView === item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      <div style={{ padding: '0 16px', marginBottom: 8 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+          Gym
+        </span>
+      </div>
+      <nav style={{ padding: '0 8px', marginBottom: 24 }}>
+        {gymItems.map(item => (
+          <button
+            key={item.id}
+            onClick={() => onViewChange(item.id)}
+            className="nav-item"
+            style={navButtonStyle(gymActive === item.id)}
           >
             {item.label}
           </button>
